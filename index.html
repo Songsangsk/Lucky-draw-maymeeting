@@ -15,13 +15,27 @@
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #475569; 
+        border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #6366f1; 
+        }
     </style>
 </head>
 <body class="text-slate-300">
 
     <script>
         
-        const API_URL = "https://script.google.com/macros/s/AKfycbx20U67B1-qeekCEuRGDbx2nFhGdxDkJQQGD1QDIbxzORQfTMKAr6BdpvB9QgdJkWcnMA/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbywr7uCqqE-SOt_SD5KHcJoa53ICWnLj3pMDEnnWnX6zeqXeHKRYucv7VpMWdF4pWLvPg/exec"; 
         let drawnNumbers = [];
         let prizes = [];
         let history = [];
@@ -45,16 +59,16 @@
         <!-- Sidebar ซ้าย: รายการรางวัล (Toggle) -->
         <div id="leftBar" class="fixed left-0 top-0 h-full w-72 bg-slate-900 border-r border-slate-800 z-50 p-8 sidebar -translate-x-full">
             <div class="flex justify-between items-center mb-10">
-                <h2 class="text-white text-xs font-black tracking-[0.2em] uppercase">รายการรางวัล</h2>
+                <h2 class="text-white text-2xl font-black tracking-[0.2em] uppercase">รายการรางวัล</h2>
                 <button onclick="toggleSidebar('leftBar')" class="text-slate-500 hover:text-white">✕</button>
             </div>
-            <div id="prizeList" class="space-y-4"></div>
+            <div id="prizeList" class="class="space-y-4 overflow-y-auto pr-2 flex-1 custom-scrollbar"></div>
         </div>
 
         <!-- Sidebar ขวา: ประวัติการสุ่ม (Toggle) -->
         <div id="rightBar" class="fixed right-0 top-0 h-full w-72 bg-slate-900 border-l border-slate-800 z-50 p-8 sidebar translate-x-full">
             <div class="flex justify-between items-center mb-10">
-                <h2 class="text-white text-xs font-black tracking-[0.2em] uppercase">ประวัติการสุ่ม</h2>
+                <h2 class="text-white text-2xl font-black tracking-[0.2em] uppercase">ประวัติการสุ่ม</h2>
                 <button onclick="toggleSidebar('rightBar')" class="text-slate-500 hover:text-white">✕</button>
             </div>
             <div id="historyList" class="space-y-3 overflow-y-auto h-[80vh]"></div>
@@ -111,6 +125,8 @@
     `).join('');
     }
 
+    const AUTH_TOKEN = "I_want_to_eat_rn";
+        
         async function startDraw() {
             const targetPrize = prizes.find(p => p.remain > 0);
             if (!targetPrize) return alert("ของรางวัลสุ่มครบทั้งหมดแล้ว");
@@ -149,7 +165,12 @@
 
                 await fetch(API_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: "saveResult", prizeName: targetPrize.name, winners: winners })
+                    body: JSON.stringify({ 
+                    action: "saveResult", 
+                    prizeName: targetPrize.name, 
+                    winners: winners,
+                    auth_token: AUTH_TOKEN // ส่งรหัสลับแนบไป
+                    })
                 });
 
                 drawnNumbers.push(...winners);
