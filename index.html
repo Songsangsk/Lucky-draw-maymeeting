@@ -3,79 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lucky Draw - Tailblocks Design</title>
+    <title>Lucky Draw System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #111827; }
+        body { font-family: 'Kanit', sans-serif; background-color: #0f172a; }
         .sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .winner-anim { animation: scaleUp 0.5s forwards; }
         @keyframes scaleUp { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        /* สไตล์ Scrollbar ให้ดูเนียนกับพื้นหลัง */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
     </style>
 </head>
-<body class="text-gray-400">
+<body class="text-slate-300">
 
     <script>
-       
-        const API_URL = "https://script.google.com/macros/s/AKfycbzz836fj-Y00NA2EmJz5KaXutNSSMpxVspZP_UqKtOi3WzOOxgDATizbHoCbcdPY3lNpw/exec"; 
+        
+        const API_URL = "https://script.google.com/macros/s/AKfycbx20U67B1-qeekCEuRGDbx2nFhGdxDkJQQGD1QDIbxzORQfTMKAr6BdpvB9QgdJkWcnMA/exec"; 
         let drawnNumbers = [];
         let prizes = [];
         let history = [];
     </script>
 
-    <!-- Header (Tailblocks Style) -->
-    <header class="text-gray-400 bg-gray-900 body-font shadow-lg border-b border-gray-800">
-        <div class="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
-            <a class="flex title-font font-medium items-center text-white mb-4 md:mb-0">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-10 h-10 text-white p-2 bg-indigo-500 rounded-full" viewBox="0 0 24 24">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                </svg>
-                <span class="ml-3 text-xl italic font-black text-indigo-400">LUCKY DRAW 2026</span>
-            </a>
-            <nav class="md:ml-auto flex flex-wrap items-center text-base justify-center">
-                <button onclick="toggleSidebar('leftBar')" class="mr-5 hover:text-white cursor-pointer transition">🎁 รายการรางวัล</button>
-                <button onclick="toggleSidebar('rightBar')" class="mr-5 hover:text-white cursor-pointer transition">📜 ประวัติ</button>
+    <!-- Header -->
+    <header class="bg-slate-900 border-b border-slate-800 p-5 shadow-xl">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <span class="text-xl font-black text-white tracking-tighter uppercase border-l-4 border-indigo-500 pl-3">LUCKY DRAW</span>
+            </div>
+            <nav class="flex gap-8">
+                <button onclick="toggleSidebar('leftBar')" class="text-sm hover:text-white font-medium transition uppercase tracking-widest">ของรางวัล</button>
+                <button onclick="toggleSidebar('rightBar')" class="text-sm hover:text-white font-medium transition uppercase tracking-widest">ประวัติ</button>
             </nav>
         </div>
     </header>
 
-    <!-- Main Content (Hero Section) -->
-    <section class="text-gray-400 bg-gray-900 body-font h-[calc(100vh-80px)] relative overflow-hidden">
+    <main class="relative h-[calc(100vh-80px)] flex flex-col items-center justify-center overflow-hidden px-4">
         
-        <!-- Sidebar ซ้าย: รายชื่อรางวัล -->
-        <div id="leftBar" class="fixed left-0 top-0 h-full w-80 bg-gray-800 shadow-2xl z-50 p-6 sidebar -translate-x-full border-r border-gray-700">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-white text-lg font-bold">รางวัลที่มี</h2>
-                <button onclick="toggleSidebar('leftBar')" class="text-gray-400 hover:text-white">✕</button>
+        <!-- Sidebar ซ้าย: รายการรางวัล (Toggle) -->
+        <div id="leftBar" class="fixed left-0 top-0 h-full w-72 bg-slate-900 border-r border-slate-800 z-50 p-8 sidebar -translate-x-full">
+            <div class="flex justify-between items-center mb-10">
+                <h2 class="text-white text-xs font-black tracking-[0.2em] uppercase">รายการรางวัล</h2>
+                <button onclick="toggleSidebar('leftBar')" class="text-slate-500 hover:text-white">✕</button>
             </div>
-            <div id="prizeList" class="space-y-3"></div>
+            <div id="prizeList" class="space-y-4"></div>
         </div>
 
-        <!-- Sidebar ขวา: ประวัติ -->
-        <div id="rightBar" class="fixed right-0 top-0 h-full w-80 bg-gray-800 shadow-2xl z-50 p-6 sidebar translate-x-full border-l border-gray-700">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-white text-lg font-bold">ประวัติการสุ่ม</h2>
-                <button onclick="toggleSidebar('rightBar')" class="text-gray-400 hover:text-white">✕</button>
+        <!-- Sidebar ขวา: ประวัติการสุ่ม (Toggle) -->
+        <div id="rightBar" class="fixed right-0 top-0 h-full w-72 bg-slate-900 border-l border-slate-800 z-50 p-8 sidebar translate-x-full">
+            <div class="flex justify-between items-center mb-10">
+                <h2 class="text-white text-xs font-black tracking-[0.2em] uppercase">ประวัติการสุ่ม</h2>
+                <button onclick="toggleSidebar('rightBar')" class="text-slate-500 hover:text-white">✕</button>
             </div>
-            <div id="historyList" class="space-y-4 overflow-y-auto h-[80vh]"></div>
+            <div id="historyList" class="space-y-3 overflow-y-auto h-[80vh]"></div>
         </div>
 
-        <div class="container mx-auto flex px-5 py-24 items-center justify-center flex-col h-full">
-            <div id="displayPrize" class="mb-4 text-indigo-400 text-2xl font-medium tracking-widest uppercase"></div>
-            
-            <!-- พื้นที่แสดงตัวเลข (เน้นใหญ่พิเศษตามโจทย์) -->
-            <div id="numberContainer" class="flex flex-wrap justify-center gap-8 mb-12">
-                <h1 class="title-font sm:text-9xl text-7xl mb-4 font-black text-white italic opacity-10">READY</h1>
-            </div>
-
-            <div class="flex justify-center">
-                <button id="drawBtn" onclick="startDraw()" class="inline-flex text-white bg-indigo-500 border-0 py-4 px-12 focus:outline-none hover:bg-indigo-600 rounded-full text-2xl font-bold shadow-indigo-500/50 shadow-2xl transition-all transform hover:scale-105 active:scale-95 disabled:opacity-30">
-                    เริ่มสุ่มรางวัลถัดไป
-                </button>
-            </div>
-            <p class="mt-8 text-sm text-gray-500 italic">เหลือรางวัลทั้งหมดในระบบอีก <span id="prizeCount" class="text-indigo-400">-</span> รายการ</p>
+        <!-- Main Display -->
+        <div id="displayPrize" class="text-indigo-400 text-lg font-bold mb-8 tracking-[0.3em] uppercase h-8"></div>
+        
+        <div id="numberContainer" class="flex flex-wrap justify-center gap-6 mb-16 max-w-6xl">
+            <h1 class="text-[12rem] font-black text-white italic opacity-5 select-none leading-none">000</h1>
         </div>
-    </section>
+
+        <button id="drawBtn" onclick="startDraw()" class="bg-white text-slate-950 hover:bg-indigo-500 hover:text-white px-20 py-6 rounded-full text-2xl font-black transition-all transform hover:scale-105 active:scale-95 disabled:opacity-20 shadow-2xl">
+            สุ่มรางวัล
+        </button>
+        
+        <p class="mt-12 text-slate-600 text-[10px] uppercase tracking-[0.5em] font-bold">182 Participants / 191 Prizes</p>
+    </main>
 
     <script>
         function toggleSidebar(id) {
@@ -92,36 +89,33 @@
                 drawnNumbers = data.drawnNumbers.map(n => parseInt(n));
                 history = data.history;
                 renderUI();
-            } catch (e) { console.error("Fetch Error:", e); }
+            } catch (e) { console.error("Error fetching data:", e); }
         }
 
         function renderUI() {
+            // ลิสต์รายการรางวัลแบบไม่มี Emoji หรือไอคอน
             document.getElementById('prizeList').innerHTML = prizes.map(p => `
-                <div class="flex items-center p-3 bg-gray-900 rounded-lg border border-gray-700">
-                    <div class="w-10 h-10 inline-flex items-center justify-center rounded-full bg-gray-800 text-indigo-400 mr-3">
-                        ${p.emoji}
-                    </div>
-                    <span class="text-gray-300 font-medium">${p.name}</span>
+                <div class="py-2 border-b border-slate-800">
+                    <span class="text-slate-400 text-sm font-medium tracking-wide">${p.name}</span>
                 </div>
             `).join('');
 
+            // ลิสต์ประวัติ
             document.getElementById('historyList').innerHTML = history.map(h => `
-                <div class="p-3 bg-gray-900 rounded-lg border-l-4 border-indigo-500">
-                    <p class="text-white font-bold text-lg leading-none"># ${h.number}</p>
-                    <p class="text-gray-500 text-xs mt-1 uppercase tracking-tighter">${h.prize}</p>
+                <div class="p-4 bg-slate-800/30 rounded-lg border border-slate-800">
+                    <p class="text-white font-black text-xl leading-none">${h.number}</p>
+                    <p class="text-slate-500 text-[9px] uppercase font-bold tracking-widest mt-2">${h.prize}</p>
                 </div>
             `).join('');
-
-            document.getElementById('prizeCount').innerText = prizes.length;
         }
 
         async function startDraw() {
             const targetPrize = prizes.find(p => p.remain > 0);
-            if (!targetPrize) return alert("จบกิจกรรม! ของรางวัลหมดแล้ว");
+            if (!targetPrize) return alert("ของรางวัลสุ่มครบทั้งหมดแล้ว");
 
             const btn = document.getElementById('drawBtn');
             btn.disabled = true;
-            document.getElementById('displayPrize').innerText = `🏆 กำลังสุ่ม: ${targetPrize.name}`;
+            document.getElementById('displayPrize').innerText = `NEXT: ${targetPrize.name}`;
             
             let available = [];
             for(let i=1; i<=182; i++) {
@@ -136,13 +130,15 @@
             }
 
             const container = document.getElementById('numberContainer');
+            // หน้าตาขณะกำลังประมวลผล
             container.innerHTML = winners.map(() => `
-                <div class="w-32 h-32 flex items-center justify-center rounded-3xl bg-gray-800 border-2 border-indigo-500 text-5xl font-black text-indigo-400 animate-pulse">?</div>
+                <div class="w-32 h-32 flex items-center justify-center rounded-2xl bg-slate-800/50 border border-slate-700 text-5xl font-black text-indigo-500/30 animate-pulse italic">?</div>
             `).join('');
 
             setTimeout(async () => {
+                // หน้าตาเมื่อสุ่มเสร็จ
                 container.innerHTML = winners.map(n => `
-                    <div class="w-40 h-40 flex flex-col items-center justify-center rounded-3xl bg-white text-gray-900 text-7xl font-black shadow-2xl winner-anim">
+                    <div class="w-32 h-32 sm:w-44 sm:h-44 flex items-center justify-center rounded-2xl bg-white text-slate-950 text-6xl sm:text-8xl font-black shadow-[0_0_50px_rgba(255,255,255,0.15)] winner-anim italic">
                         ${n}
                     </div>
                 `).join('');
@@ -155,7 +151,7 @@
                 drawnNumbers.push(...winners);
                 fetchData();
                 btn.disabled = false;
-            }, 2000);
+            }, 1500);
         }
 
         fetchData();
