@@ -3,202 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lucky Draw System</title>
+    <title>Lucky Draw 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; color: #1e293b; }
-        .sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); background-color: #1e293b; border-color: #334155; }
-        .winner-anim { animation: scaleUp 0.5s forwards; }
-        @keyframes scaleUp { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        /* สไตล์ Scrollbar ให้ดูเนียนกับพื้นหลัง */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-
-        .custom-scrollbar::-webkit-scrollbar {
-        width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.05);
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #475569; 
-        border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #6366f1; 
-        }
+        body { font-family: 'Kanit', sans-serif; background-color: #f9fafb; }
+        .sidebar { transition: transform 0.3s ease-in-out; }
+        .winner-card { animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
-<body class="text-slate-300">
+<body class="overflow-hidden">
 
     <script>
-        
-        const API_URL = "https://script.google.com/macros/s/AKfycbwpDO7IyLxnDTQuDpJaLCj25WoUfGC8Lt5O0xg8i8_VKc9YLu92YwvPnjWr0VXK1lvgyA/exec"; 
-        let drawnNumbers = [];
-        let prizes = [];
-        let history = [];
-    </script>
+        const API_URL = "ใส่_URL_APPS_SCRIPT_ที่นี่"; 
+        const AUTH_TOKEN = "I_want_to_eat_rn";
+        let prizes = [], drawnNumbers = [], history = [];
 
-    <!-- Header -->
-    <header class="bg-white border-b border-slate-200 p-5 shadow-sm">
-    <div class="container mx-auto flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <span class="text-xl font-black text-slate-900 tracking-tighter uppercase border-l-4 border-indigo-600 pl-3">LUCKY DRAW</span>
-        </div>
-        <nav class="flex gap-8">
-            <button onclick="toggleSidebar('leftBar')" class="text-sm text-slate-600 hover:text-indigo-600 font-medium transition uppercase tracking-widest">ของรางวัล</button>
-            <button onclick="toggleSidebar('rightBar')" class="text-sm text-slate-600 hover:text-indigo-600 font-medium transition uppercase tracking-widest">ประวัติ</button>
-        </nav>
-    </div>
-    </header>
-
-    <main class="relative h-[calc(100vh-80px)] flex flex-col items-center justify-center overflow-hidden px-4 bg-slate-50">
-        
-        <!-- Sidebar ซ้าย: รายการรางวัล (Toggle) -->
-       <div id="leftBar" class="fixed left-0 top-0 h-full w-80 z-50 p-8 sidebar -translate-x-full shadow-2xl flex flex-col">
-            <div class="flex justify-between items-center mb-10 flex-none border-b border-slate-700 pb-4">
-            <h2 class="text-white text-xl font-black tracking-tight uppercase">รายการรางวัล</h2>
-            <button onclick="toggleSidebar('leftBar')" class="text-slate-400 hover:text-white text-2xl">✕</button>
-        </div>
-            <div id="prizeList" class="space-y-4 overflow-y-auto pr-2 flex-1 custom-scrollbar"></div>
-        </div>
-
-        <!-- Sidebar ขวา: ประวัติการสุ่ม (Toggle) -->
-        <div id="rightBar" class="fixed right-0 top-0 h-full w-80 z-50 p-8 sidebar translate-x-full shadow-2xl flex flex-col">
-            <div class="flex justify-between items-center mb-10">
-                <h2 class="text-white text-2xl font-black tracking-[0.2em] uppercase">ประวัติการสุ่ม</h2>
-                <button onclick="toggleSidebar('rightBar')" class="text-slate-500 hover:text-white">✕</button>
-            </div>
-            <div id="historyList" class="space-y-3 overflow-y-auto pr-2 flex-1 custom-scrollbar"></div>
-        </div>
-
-        <!-- Main Display -->
-        <div id="displayPrize" class="text-indigo-600 text-5xl font-black mb-10 tracking-tight leading-tight uppercase text-center"></div>
-    
-    <div id="numberContainer" class="flex flex-wrap justify-center gap-6 mb-16 max-w-6xl">
-        <!-- ตัวเลข READY เปลี่ยนจากสีขาวเป็นสีเข้มโปร่งแสง -->
-        <h1 class="text-[12rem] font-black text-slate-900 italic opacity-5 select-none leading-none">000</h1>
-    </div>
-
-    <!-- ปุ่มสุ่ม เปลี่ยนจากสีขาวเป็นสีเข้มเพื่อให้เด่นบนพื้นสว่าง -->
-    <button id="drawBtn" onclick="startDraw()" class="bg-slate-900 text-white hover:bg-indigo-600 px-20 py-6 rounded-full text-2xl font-black transition-all transform hover:scale-105 active:scale-95 shadow-xl">
-        สุ่มรางวัล
-    </button>
-        
-        <p class="mt-12 text-slate-600 text-[10px] uppercase tracking-[0.5em] font-bold">182 Participants</p>
-    </main>
-
-    <script>
-    // ตรวจสอบว่ามีตัวแปรเหล่านี้ที่ด้านบนสุดแล้ว
-    // let prizes = []; let drawnNumbers = []; let history = [];
-
-    function toggleSidebar(id) {
-        const el = document.getElementById(id);
-        if (id === 'leftBar') el.classList.toggle('-translate-x-full');
-        else el.classList.toggle('translate-x-full');
-    }
-
-    async function fetchData() {
-        try {
-            const res = await fetch(API_URL);
-            const data = await res.json();
-            prizes = data.prizes.sort((a, b) => a.priority - b.priority);
-            drawnNumbers = data.drawnNumbers.map(n => parseInt(n));
-            history = data.history;
-            renderUI();
-        } catch (e) { console.error("Error fetching data:", e); }
-    }
-
-    function renderUI() {
-        // รายการรางวัล (Sidebar ซ้าย)
-        document.getElementById('prizeList').innerHTML = prizes.map(p => `
-            <div class="py-3 border-b border-slate-700">
-                <span class="text-white text-sm font-medium tracking-wide">${p.name} (เหลือ ${p.remain})</span>
-            </div>
-        `).join('');
-
-        // ประวัติการสุ่ม (Sidebar ขวา) - ล่าสุดอยู่บน
-        document.getElementById('historyList').innerHTML = history.slice().reverse().map(h => `
-            <div class="p-4 bg-white rounded-lg border border-slate-200 shadow-sm mb-3">
-                <p class="text-slate-900 font-black text-2xl leading-none">${h.number}</p>
-                <p class="text-slate-400 text-[10px] uppercase font-bold tracking-widest mt-2">${h.prize}</p>
-            </div>
-        `).join('');
-    }
-
-    const AUTH_TOKEN = "I_want_to_eat_rn";
-
-    async function startDraw() {
-        const targetPrize = prizes.find(p => p.remain > 0);
-        if (!targetPrize) return alert("ของรางวัลสุ่มครบทั้งหมดแล้ว");
-
-        const btn = document.getElementById('drawBtn');
-        btn.disabled = true;
-        document.getElementById('displayPrize').innerText = `NEXT: ${targetPrize.name}`;
-
-        let available = [];
-        for (let i = 1; i <= 182; i++) {
-            if (!drawnNumbers.includes(i)) available.push(i);
+        async function fetchData() {
+            try {
+                const res = await fetch(API_URL);
+                const data = await res.json();
+                prizes = data.prizes.sort((a,b) => a.priority - b.priority);
+                drawnNumbers = data.drawnNumbers;
+                history = data.history;
+                renderUI();
+            } catch (e) { console.error("Fetch error", e); }
         }
 
-        let winners = [];
-        let countToDraw = Math.min(targetPrize.remain, available.length);
-        if (countToDraw <= 0) return alert("ไม่มีผู้มีสิทธิ์เหลือให้สุ่ม");
+        function renderUI() {
+            document.getElementById('prizeList').innerHTML = prizes.map(p => `
+                <div class="p-3 mb-2 bg-white rounded border border-slate-200 shadow-sm">
+                    <p class="font-bold text-slate-700">${p.name}</p>
+                    <p class="text-xs text-slate-400">คงเหลือ ${p.remain} ชิ้น</p>
+                </div>
+            `).join('');
 
-        for (let i = 0; i < countToDraw; i++) {
-            const randomIndex = Math.floor(Math.random() * available.length);
-            winners.push(available.splice(randomIndex, 1)[0]);
+            document.getElementById('historyList').innerHTML = history.slice().reverse().map(h => `
+                <div class="p-2 mb-2 bg-indigo-50 border-l-4 border-indigo-500 rounded text-sm">
+                    <span class="font-black">#${h.number}</span> - ${h.prize}
+                </div>
+            `).join('');
         }
 
-        const container = document.getElementById('numberContainer');
-        container.innerHTML = ''; // ล้างเลขเก่า
+        async function startDraw() {
+            const prize = prizes[0]; // เลือกรางวัลตาม Priority แรกที่ยังเหลืออยู่
+            if (!prize) return alert("ของรางวัลหมดแล้ว!");
 
-        // 1. หน้าตาขณะกำลังประมวลผล (Fake Shuffle)
-        container.innerHTML = winners.map(n => `
-            <div class="w-32 h-32 sm:w-44 sm:h-44 flex items-center justify-center rounded-2xl bg-white text-slate-400 border-2 border-slate-100 text-6xl sm:text-8xl font-black shadow-xl winner-anim italic opacity-50">
-                ...
-            </div>
-        `).join('');
+            const btn = document.getElementById('drawBtn');
+            btn.disabled = true;
+            btn.innerText = "กำลังสุ่ม...";
 
-        setTimeout(async () => {
-            // 2. แสดงผลผู้ชนะบนหน้าจอ
+            // Logic: กรองเลขที่ยังไม่ถูกสุ่ม (1-182)
+            let available = [];
+            for(let i=1; i<=182; i++) if(!drawnNumbers.includes(i)) available.push(i);
+
+            if(available.length < 1) return alert("คนสุ่มครบ 182 คนแล้ว!");
+
+            let winners = [];
+            let count = Math.min(prize.remain, available.length);
+            
+            for(let i=0; i<count; i++) {
+                const idx = Math.floor(Math.random() * available.length);
+                winners.push(available.splice(idx, 1)[0]);
+            }
+
+            // แสดงผล UI
+            document.getElementById('prizeTitle').innerText = `รางวัล: ${prize.name}`;
+            const container = document.getElementById('numberContainer');
             container.innerHTML = winners.map(n => `
-                <div class="w-32 h-32 sm:w-44 sm:h-44 flex items-center justify-center rounded-2xl bg-white text-slate-950 text-6xl sm:text-8xl font-black shadow-xl border-4 border-indigo-500 winner-anim italic">
+                <div class="winner-card bg-white text-indigo-600 text-6xl md:text-8xl font-black w-40 h-40 md:w-56 md:h-56 flex items-center justify-center rounded-3xl shadow-2xl border-4 border-indigo-100 italic">
                     ${n}
                 </div>
             `).join('');
 
-            // 3. อัปเดตข้อมูลในเครื่องทันที (Real-time UI)
-            const newEntries = winners.map(n => ({ number: n, prize: targetPrize.name }));
-            history.push(...newEntries);
-            drawnNumbers.push(...winners);
-            renderUI();
+            // บันทึก Backend
+            await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "saveResult", prizeName: prize.name, winners, auth_token: AUTH_TOKEN })
+            });
 
-            // 4. บันทึกลงหลังบ้าน
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: "saveResult",
-                        prizeName: targetPrize.name,
-                        winners: winners,
-                        auth_token: AUTH_TOKEN
-                    })
-                });
-                
-                // โหลดข้อมูลสต็อกที่อัปเดตจาก Google Sheet จริงๆ อีกครั้ง
-                await fetchData();
-            } catch (e) {
-                console.error("บันทึกข้อมูลไม่สำเร็จ:", e);
-                alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
-            } finally {
-                btn.disabled = false;
-            }
-        }, 1500);
-    }
-        fetchData();
-</script>
+            await fetchData();
+            btn.disabled = false;
+            btn.innerText = "สุ่มรางวัลถัดไป";
+        }
+
+        function toggleSidebar(id) { document.getElementById(id).classList.toggle('-translate-x-full'); document.getElementById(id).classList.toggle('translate-x-full'); }
+        window.onload = fetchData;
+    </script>
+
+    <!-- UI Layout -->
+    <div class="relative h-screen w-full flex flex-col items-center justify-center p-4">
+        
+        <!-- Sidebar รางวัล (ซ้าย) -->
+        <div id="leftBar" class="sidebar fixed left-0 top-0 h-full w-64 bg-slate-50 border-r p-6 z-40 -translate-x-full shadow-xl overflow-y-auto">
+            <h2 class="text-xl font-black mb-6 border-b pb-2 uppercase tracking-tighter">Prizes List</h2>
+            <div id="prizeList"></div>
+        </div>
+
+        <!-- Sidebar ประวัติ (ขวา) -->
+        <div id="rightBar" class="sidebar fixed right-0 top-0 h-full w-64 bg-slate-50 border-l p-6 z-40 translate-x-full shadow-xl overflow-y-auto">
+            <h2 class="text-xl font-black mb-6 border-b pb-2 uppercase tracking-tighter">History</h2>
+            <div id="historyList"></div>
+        </div>
+
+        <!-- Nav Buttons -->
+        <div class="fixed top-6 w-full px-10 flex justify-between z-50">
+            <button onclick="document.getElementById('leftBar').classList.toggle('-translate-x-full')" class="bg-white p-3 rounded-full shadow-md hover:bg-slate-50">🎁 ของรางวัล</button>
+            <button onclick="document.getElementById('rightBar').classList.toggle('translate-x-full')" class="bg-white p-3 rounded-full shadow-md hover:bg-slate-50">📜 ประวัติ</button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="text-center">
+            <h3 id="prizeTitle" class="text-indigo-500 font-bold text-2xl mb-4 tracking-widest uppercase">พร้อมสำหรับการสุ่ม</h3>
+            <div id="numberContainer" class="flex flex-wrap justify-center gap-6 mb-12">
+                <div class="text-slate-200 text-9xl font-black italic select-none">READY</div>
+            </div>
+            <button id="drawBtn" onclick="startDraw()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-2xl font-black px-16 py-6 rounded-2xl shadow-[0_20px_50px_rgba(79,70,229,0.3)] transition-all transform active:scale-95">
+                เริ่มสุ่มรางวัล
+            </button>
+            <p class="mt-8 text-slate-400 text-sm uppercase tracking-[0.3em]">182 Participants • Real-time Backend</p>
+        </div>
+    </div>
+
 </body>
 </html>
