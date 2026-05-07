@@ -214,26 +214,54 @@
         }
 
         async function executeDraw(qty, available) {
-            let winners = [];
-            for(let i=0; i<qty; i++) {
-                const randIdx = Math.floor(Math.random() * available.length);
-                winners.push(available.splice(randIdx, 1)[0]);
-            }
+    let winners = [];
+    for (let i = 0; i < qty; i++) {
+        const randIdx = Math.floor(Math.random() * available.length);
+        winners.push(available.splice(randIdx, 1)[0]);
+    }
 
-            // แสดงผลเลขทันที
-            const displayArea = document.getElementById('displayArea');
-            displayArea.innerHTML = winners.map(n => `
+    const displayArea = document.getElementById('displayArea');
+    displayArea.innerHTML = ""; // ล้างหน้าจอหลัง Countdown เสร็จ
+
+    // Logic การแสดงผล
+    if (qty <= 10) {
+        // กรณีสุ่มไม่เกิน 10 เลข: ขึ้นทีละเลข ห่างกันทุก 3 วินาที
+        for (let i = 0; i < winners.length; i++) {
+            const cardHtml = `
+                <div class="winner-card w-24 h-24 md:w-40 md:h-40 bg-white border-4 border-indigo-100 rounded-3xl shadow-xl flex items-center justify-center text-4xl md:text-6xl font-black text-indigo-600 italic">
+                    ${winners[i]}
+                </div>`;
+            displayArea.insertAdjacentHTML('beforeend', cardHtml);
+            
+            // ถ้าไม่ใช่เลขสุดท้าย ให้รอ 3 วินาทีก่อนขึ้นเลขถัดไป
+            if (i < winners.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 3000));
+            }
+        }
+    } else {
+        // กรณีสุ่มมากกว่า 10 เลข: ขึ้นทีละ 5 เลข ห่างกันทุก 3 วินาที
+        for (let i = 0; i < winners.length; i += 5) {
+            const chunk = winners.slice(i, i + 5);
+            const chunkHtml = chunk.map(n => `
                 <div class="winner-card w-24 h-24 md:w-40 md:h-40 bg-white border-4 border-indigo-100 rounded-3xl shadow-xl flex items-center justify-center text-4xl md:text-6xl font-black text-indigo-600 italic">
                     ${n}
-                </div>
-            `).join('');
+                </div>`).join('');
+            
+            displayArea.insertAdjacentHTML('beforeend', chunkHtml);
 
-            // ปรับปุ่มให้สุ่มต่อได้เลยโดยไม่ต้องรอดึงข้อมูลใหม่เสร็จ
-            document.getElementById('drawBtn').disabled = false;
-
-            // ส่งข้อมูลบันทึก Backend (Background)
-            saveAndSync(winners);
+            // ถ้ายังมีกลุ่มถัดไป ให้รอ 3 วินาที
+            if (i + 5 < winners.length) {
+                await new Promise(resolve => setTimeout(resolve, 3000));
+            }
         }
+    }
+
+    // เปิดให้กดสุ่มใหม่ได้หลังจากแสดงครบแล้ว
+    document.getElementById('drawBtn').disabled = false;
+
+    // บันทึกข้อมูลเบื้องหลัง
+    saveAndSync(winners);
+}
 
         async function saveAndSync(winners) {
             try {
