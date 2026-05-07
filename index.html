@@ -8,16 +8,61 @@
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; }
-        .sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100; }
+        .sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .winner-card { animation: pop 0.5s ease-out forwards; }
         @keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .prize-item.active { border-color: #4f46e5; background-color: #eff6ff; border-width: 2px; }
+
+        /* แก้ไขส่วน countdown-circle ทั้งหมดใน <style> */
+.countdown-circle {
+    width: 150px; 
+    height: 150px;
+    border-radius: 50%;
+    border: 8px solid #e2e8f0; /* เส้นพื้นหลังสีเทา */
+    position: relative;
+    display: flex; 
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+/* เส้นสีม่วงที่หมุน */
+.countdown-circle::before {
+    content: '';
+    position: absolute;
+    top: -8px; 
+    left: -8px; 
+    width: 150px; 
+    height: 150px;
+    border-radius: 50%;
+    border: 8px solid transparent;
+    border-top-color: #4f46e5; /* สีม่วง indigo-600 */
+    animation: spin 1s linear infinite;
+    box-sizing: border-box;
+    pointer-events: none;
+}
+
+#timerText {
+    font-size: 4rem; /* ขนาดเลข */
+    font-weight: 900;
+    color: #4f46e5;
+    z-index: 10;
+    /* บังคับให้อยู่กึ่งกลางเป๊ะ */
+    display: block;
+    line-height: 1;
+}
+
+@keyframes spin { 
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); } 
+}
+
+.prize-item.active { border-color: #4f46e5; background-color: #eff6ff; border-width: 2px; }
     </style>
 </head>
 <body class="overflow-hidden h-screen text-slate-800">
 
     <!-- แถบข้างซ้าย: ของรางวัล -->
-    <div id="leftBar" class="sidebar fixed left-0 top-0 h-full w-72 bg-white border-r shadow-2xl -translate-x-full overflow-y-auto p-6">
+    <div id="leftBar" class="sidebar fixed left-0 top-0 h-full w-72 bg-white border-r shadow-2xl z-50 -translate-x-full overflow-y-auto p-6">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-xl font-bold">เลือกของรางวัล</h2>
             <button onclick="toggleBar('leftBar')" class="text-slate-400 hover:text-red-500 text-2xl">✕</button>
@@ -26,7 +71,7 @@
     </div>
 
     <!-- แถบข้างขวา: ประวัติ -->
-    <div id="rightBar" class="sidebar fixed right-0 top-0 h-full w-72 bg-white border-l shadow-2xl translate-x-full overflow-y-auto p-6">
+    <div id="rightBar" class="sidebar fixed right-0 top-0 h-full w-72 bg-white border-l shadow-2xl z-50 translate-x-full overflow-y-auto p-6">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-xl font-bold">ประวัติสุ่ม (เรียงเลข)</h2>
             <button onclick="toggleBar('rightBar')" class="text-slate-400 hover:text-red-500 text-2xl">✕</button>
@@ -36,6 +81,8 @@
 
     <!-- Main Content -->
     <div class="flex flex-col items-center justify-center h-full p-4 relative">
+
+        <!-- Toggle Buttons -->
         <div class="fixed top-6 w-full px-8 flex justify-between z-40">
             <button onclick="toggleBar('leftBar')" class="bg-white border shadow-md px-6 py-2.5 rounded-full hover:bg-slate-50 transition font-bold text-indigo-600 flex items-center gap-2">
                 <span>🎁</span> เลือกของรางวัล
@@ -47,7 +94,8 @@
 
         <div class="text-center w-full max-w-5xl px-4">
             <h1 id="selectedPrizeName" class="text-4xl md:text-6xl font-extrabold text-slate-800 mb-2 italic">เลือกรางวัลเพื่อเริ่ม</h1>
-            
+
+            <!-- ส่วน Input กำหนดจำนวนสุ่ม -->
             <div class="flex flex-col items-center gap-2 mt-8 mb-10">
                 <p class="text-slate-500 font-bold uppercase tracking-wider text-sm">ระบุจำนวนผู้โชคดีรอบนี้</p>
                 <div class="flex items-center gap-3">
@@ -57,14 +105,15 @@
                 </div>
             </div>
 
+            <!-- Area แสดงผล (วงกลมรอสุ่ม / ตัวเลขผู้ชนะ) -->
             <div id="displayArea" class="flex flex-wrap justify-center items-center gap-4 md:gap-8 mb-12 min-h-[250px]">
                 <div class="text-slate-100 text-8xl font-black italic select-none opacity-40">READY</div>
             </div>
 
-            <button id="drawBtn" onclick="handleDrawClick()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-3xl font-black px-20 py-6 rounded-3xl shadow-xl transform active:scale-95 transition-all disabled:opacity-30">
+            <button id="drawBtn" onclick="handleDrawClick()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-3xl font-black px-20 py-6 rounded-3xl shadow-[0_20px_50px_rgba(79,70,229,0.3)] transform active:scale-95 transition-all disabled:opacity-30">
                 กดเพื่อเริ่มสุ่ม
             </button>
-            
+
             <p id="remainingUsers" class="mt-8 text-indigo-500 font-bold text-sm uppercase tracking-widest">
                 กำลังโหลดข้อมูลคน...
             </p>
@@ -72,7 +121,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwoamv9U1ImgkRV6JnqPx8k7uRMhKoGgeLDmFCEKTaci1KrGz_G8CbM_G7Hfs78qQJnWA/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbzSYktzpNkUJnmjyK8O2MaiJDt56FJWp0tKYQmaatLz_FnHK04IpdnuufimZME_cA2Fvg/exec"; 
         const AUTH_TOKEN = "I_want_to_eat_rn";
         let prizes = [], drawnNumbers = [], history = [], selectedPrize = null;
 
@@ -83,6 +132,7 @@
                 prizes = data.prizes;
                 drawnNumbers = data.drawnNumbers;
                 history = data.history;
+
                 renderPrizes();
                 renderHistory();
                 updateUserCount();
@@ -121,84 +171,136 @@
             toggleBar('leftBar');
         }
 
-        function toggleBar(id) {
-            const el = document.getElementById(id);
-            if (id === 'leftBar') {
-                el.classList.toggle('-translate-x-full');
-            } else {
-                el.classList.toggle('translate-x-full');
-            }
-        }
-
         async function handleDrawClick() {
             if (!selectedPrize) return alert("กรุณาเลือกของรางวัลก่อนครับ");
+
             const qty = parseInt(document.getElementById('drawQty').value);
-            
+
+            // Logic เช็คจำนวนของที่เหลือ
             if (qty < 1) return alert("ระบุจำนวนอย่างน้อย 1 คน");
             if (qty > selectedPrize.remain) {
-                return alert(`ของเหลือเพียง ${selectedPrize.remain} ชิ้น ไม่สามารถสุ่ม ${qty} คนได้`);
+                return alert(`ไม่สามารถสุ่ม ${qty} คนได้ เนื่องจากตอนนี้ของเหลือเพียง ${selectedPrize.remain} ชิ้น\nกรุณาเปลี่ยนจำนวนสุ่มให้เท่ากับหรือน้อยกว่าของที่เหลือครับ`);
             }
 
             const available = [];
             for(let i=1; i<=182; i++) if(!drawnNumbers.includes(i)) available.push(i);
             if(available.length < qty) return alert("จำนวนคนที่มีสิทธิ์ไม่พอ");
 
-            const btn = document.getElementById('drawBtn');
-            btn.disabled = true;
-            executeDraw(qty, available);
+            // เริ่ม Countdown
+            startCountdown(qty, available);
+        }
+
+        function startCountdown(qty, available) {
+              const btn = document.getElementById('drawBtn');
+              const displayArea = document.getElementById('displayArea');
+              btn.disabled = true;
+    
+         let timeLeft = 5; // แก้จาก 3 เป็น 5
+             displayArea.innerHTML = `<div class="flex flex-col items-center">
+                <div class="countdown-circle">
+                    <span id="timerText" class="text-6xl font-black text-indigo-600">${timeLeft}</span>
+                </div>
+        </div>`;
+
+            const timer = setInterval(() => {
+                timeLeft--;
+                if(timeLeft > 0) {
+                    document.getElementById('timerText').innerText = timeLeft;
+                } else {
+                    clearInterval(timer);
+                    executeDraw(qty, available);
+                }
+            }, 1000);
+           const btn = document.getElementById('drawBtn');
+            btn.disabled = true; // ปิดปุ่มทันทีเพื่อกันกดซ้ำ
+            executeDraw(qty, available); // เริ่มรันเลขทันที
+        
         }
 
         async function executeDraw(qty, available) {
-            let winners = [];
-            for (let i = 0; i < qty; i++) {
-                const randIdx = Math.floor(Math.random() * available.length);
-                winners.push(available.splice(randIdx, 1)[0]);
-            }
+    let winners = [];
+    for (let i = 0; i < qty; i++) {
+        const randIdx = Math.floor(Math.random() * available.length);
+        winners.push(available.splice(randIdx, 1)[0]);
+    }
 
-            const displayArea = document.getElementById('displayArea');
-            displayArea.innerHTML = ""; 
+    const displayArea = document.getElementById('displayArea');
+    displayArea.innerHTML = ""; // ล้างหน้าจอหลัง Countdown เสร็จ
 
-            if (qty <= 10) {
-                for (let i = 0; i < winners.length; i++) {
-                    const cardHtml = `
-                        <div class="winner-card w-24 h-24 md:w-40 md:h-40 bg-white border-4 border-indigo-100 rounded-3xl shadow-xl flex items-center justify-center text-4xl md:text-6xl font-black text-indigo-600 italic">
-                            ${winners[i]}
-                        </div>`;
-                    displayArea.insertAdjacentHTML('beforeend', cardHtml);
-                    if (i < winners.length - 1) await new Promise(r => setTimeout(r, 1000));
-                }
-            } else {
-                for (let i = 0; i < winners.length; i += 5) {
-                    const chunk = winners.slice(i, i + 5);
-                    const chunkHtml = chunk.map(n => `
-                        <div class="winner-card w-24 h-24 md:w-40 md:h-40 bg-white border-4 border-indigo-100 rounded-3xl shadow-xl flex items-center justify-center text-4xl md:text-6xl font-black text-indigo-600 italic">
-                            ${n}
-                        </div>`).join('');
-                    displayArea.insertAdjacentHTML('beforeend', chunkHtml);
-                    if (i + 5 < winners.length) await new Promise(r => setTimeout(r, 1000));
-                }
+    // Logic การแสดงผล
+    if (qty <= 10) {
+        // กรณีสุ่มไม่เกิน 10 เลข: ขึ้นทีละเลข ห่างกันทุก 3 วินาที
+        for (let i = 0; i < winners.length; i++) {
+            const cardHtml = `
+                <div class="winner-card w-24 h-24 md:w-40 md:h-40 bg-white border-4 border-indigo-100 rounded-3xl shadow-xl flex items-center justify-center text-4xl md:text-6xl font-black text-indigo-600 italic">
+                    ${winners[i]}
+                </div>`;
+            displayArea.insertAdjacentHTML('beforeend', cardHtml);
+
+            // ถ้าไม่ใช่เลขสุดท้าย ให้รอ 3 วินาทีก่อนขึ้นเลขถัดไป
+            if (i < winners.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                await new Promise(resolve => setTimeout(resolve, 1000));
             }
-            document.getElementById('drawBtn').disabled = false;
-            saveAndSync(winners);
         }
+    } else {
+        // กรณีสุ่มมากกว่า 10 เลข: ขึ้นทีละ 5 เลข ห่างกันทุก 3 วินาที
+        for (let i = 0; i < winners.length; i += 5) {
+            const chunk = winners.slice(i, i + 5);
+            const chunkHtml = chunk.map(n => `
+                <div class="winner-card w-24 h-24 md:w-40 md:h-40 bg-white border-4 border-indigo-100 rounded-3xl shadow-xl flex items-center justify-center text-4xl md:text-6xl font-black text-indigo-600 italic">
+                    ${n}
+                </div>`).join('');
+
+            displayArea.insertAdjacentHTML('beforeend', chunkHtml);
+
+            // ถ้ายังมีกลุ่มถัดไป ให้รอ 3 วินาที
+            if (i + 5 < winners.length) {
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+    }
+
+    // เปิดให้กดสุ่มใหม่ได้หลังจากแสดงครบแล้ว
+    document.getElementById('drawBtn').disabled = false;
+
+    // บันทึกข้อมูลเบื้องหลัง
+    saveAndSync(winners);
+}
 
         async function saveAndSync(winners) {
             try {
+                // อัปเดตข้อมูลในหน้าเว็บชั่วคราว (Optimistic Update)
                 drawnNumbers.push(...winners);
                 updateUserCount();
                 selectedPrize.remain -= winners.length;
+
                 await fetch(API_URL, {
                     method: 'POST',
                     mode: 'no-cors',
-                    body: JSON.stringify({ action: "saveResult", prizeName: selectedPrize.name, winners, auth_token: AUTH_TOKEN })
+                    body: JSON.stringify({ 
+                        action: "saveResult", 
+                        prizeName: selectedPrize.name, 
+                        winners, 
+                        auth_token: AUTH_TOKEN 
+                    })
                 });
+
+                // ดึงข้อมูลจริงมา Re-sync อีกครั้งแบบเงียบๆ
                 const res = await fetch(API_URL);
                 const data = await res.json();
                 prizes = data.prizes;
                 drawnNumbers = data.drawnNumbers;
                 history = data.history;
                 renderHistory();
-            } catch (e) { console.error("Save Error"); }
+            } catch (e) { console.error("Background Save Error"); }
+        }
+
+        function toggleBar(id) {
+            const el = document.getElementById(id);
+            if (id === 'leftBar') el.classList.toggle('-translate-x-full');
+            else el.classList.toggle('translate-x-full');
         }
 
         window.onload = init;
