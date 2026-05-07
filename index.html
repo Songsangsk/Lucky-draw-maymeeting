@@ -12,36 +12,51 @@
         .winner-card { animation: pop 0.5s ease-out forwards; }
         @keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         
-        /* สไตล์วงกลมนับถอยหลัง */
-        .countdown-circle {
-    width: 150px; height: 150px;
+        /* แก้ไขส่วน countdown-circle ทั้งหมดใน <style> */
+.countdown-circle {
+    width: 150px; 
+    height: 150px;
     border-radius: 50%;
-    border: 8px solid #e2e8f0;
-    position: relative; /* เพิ่มบรรทัดนี้ */
+    border: 8px solid #e2e8f0; /* เส้นพื้นหลังสีเทา */
+    position: relative;
     display: flex; 
-    align-items: center;      /* จัดกึ่งกลางแนวดิ่ง */
-    justify-content: center;   /* จัดกึ่งกลางแนวราบ */
-    }
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
 
-
-    .countdown-circle::after {
+/* เส้นสีม่วงที่หมุน */
+.countdown-circle::before {
     content: '';
     position: absolute;
-    top: -8px; left: -8px; right: -8px; bottom: -8px;
+    top: -8px; 
+    left: -8px; 
+    width: 150px; 
+    height: 150px;
     border-radius: 50%;
     border: 8px solid transparent;
-    border-top-color: #4f46e5;
+    border-top-color: #4f46e5; /* สีม่วง indigo-600 */
     animation: spin 1s linear infinite;
-    z-index: 1;
-    }
+    box-sizing: border-box;
+    pointer-events: none;
+}
 
-    #timerText {
-    position: relative;
-    z-index: 10;              /* ให้ตัวเลขอยู่ชั้นบนสุด */
-    line-height: 1;           /* ปรับระยะบรรทัดให้เลขอยู่กลางเป๊ะ */
+#timerText {
+    font-size: 4rem; /* ขนาดเลข */
+    font-weight: 900;
+    color: #4f46e5;
+    z-index: 10;
+    /* บังคับให้อยู่กึ่งกลางเป๊ะ */
+    display: block;
+    line-height: 1;
+}
 
-    @keyframes spin { to { transform: rotate(360deg); } }
-        .prize-item.active { border-color: #4f46e5; background-color: #eff6ff; border-width: 2px; }
+@keyframes spin { 
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); } 
+}
+
+.prize-item.active { border-color: #4f46e5; background-color: #eff6ff; border-width: 2px; }
     </style>
 </head>
 <body class="overflow-hidden h-screen text-slate-800">
