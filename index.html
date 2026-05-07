@@ -11,6 +11,8 @@
         .sidebar { transition: transform 0.3s ease-in-out; }
         .winner-card { animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes pop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        /* สไตล์สำหรับของรางวัลที่ถูกเลือก */
+        .prize-item.active { border-color: #4f46e5; border-width: 3px; background-color: #eef2ff; }
     </style>
 </head>
 <body class="overflow-hidden">
@@ -19,25 +21,33 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbyUYG6JJJaO3m9Is0qSid5Eo-75XsvUqrWl7GJiPa1RlZG7MRSdVTgzhrSht_3mZOOupw/exec"; 
         const AUTH_TOKEN = "I_want_to_eat_rn";
         let prizes = [], drawnNumbers = [], history = [];
+        let selectedPrizeIndex = 0; // เก็บค่าว่าเลือกรางวัลลำดับที่เท่าไหร่ใน Array
 
         async function fetchData() {
             try {
                 const res = await fetch(API_URL);
                 const data = await res.json();
+                // เรียงลำดับตาม Priority (ค่าน้อยขึ้นก่อน)
                 prizes = data.prizes.sort((a,b) => a.priority - b.priority);
                 drawnNumbers = data.drawnNumbers;
                 history = data.history;
+                
+                // คืนค่าการเลือกไปที่ตัวแรก (ที่ Priority สูงสุด)
+                selectedPrizeIndex = 0; 
                 renderUI();
+                updateSelection();
             } catch (e) { console.error("Fetch error", e); }
         }
 
         function renderUI() {
-            document.getElementById('prizeList').innerHTML = prizes.map(p => `
-                <div class="p-3 mb-2 bg-white rounded border border-slate-200 shadow-sm">
+            // รายการของรางวัลทางซ้าย
+            document.getElementById('prizeList').innerHTML = prizes.map((p, index) => `
+                <div id="prize-${index}" onclick="selectPrize(${index})" class="prize-item cursor-pointer p-3 mb-2 bg-white rounded border border-slate-200 shadow-sm transition-all hover:bg-indigo-50">
                     <p class="font-bold text-slate-700">${p.name}</p>
                 </div>
             `).join('');
 
+            // รายการประวัติทางขวา
             document.getElementById('historyList').innerHTML = history.slice().reverse().map(h => `
                 <div class="p-2 mb-2 bg-indigo-50 border-l-4 border-indigo-500 rounded text-sm">
                     <span class="font-black">#${h.number}</span> - ${h.prize}
@@ -45,9 +55,31 @@
             `).join('');
         }
 
+        // ฟังก์ชันเมื่อคลิกเลือกของรางวัลเอง
+        function selectPrize(index) {
+            selectedPrizeIndex = index;
+            updateSelection();
+            // ปิด sidebar อัตโนมัติหลังเลือก (ถ้าจอมือถือ)
+            if (window.innerWidth < 768) {
+                document.getElementById('leftBar').classList.add('-translate-x-full');
+            }
+        }
+
+        // อัปเดตการแสดงผลว่าเลือกรางวัลไหนอยู่
+        function updateSelection() {
+            const allPrizes = document.querySelectorAll('.prize-item');
+            allPrizes.forEach(el => el.classList.remove('active'));
+            
+            const activeEl = document.getElementById(`prize-${selectedPrizeIndex}`);
+            if (activeEl) {
+                activeEl.classList.add('active');
+                document.getElementById('prizeTitle').innerText = `รางวัล: ${prizes[selectedPrizeIndex].name}`;
+            }
+        }
+
         async function startDraw() {
-            const prize = prizes[0]; // เลือกรางวัลตาม Priority แรกที่ยังเหลืออยู่
-            if (!prize) return alert("ของรางวัลหมดแล้ว!");
+            const prize = prizes[selectedPrizeIndex]; 
+            if (!prize) return alert("โปรดเลือกของรางวัลก่อน!");
 
             const btn = document.getElementById('drawBtn');
             btn.disabled = true;
@@ -67,8 +99,7 @@
                 winners.push(available.splice(idx, 1)[0]);
             }
 
-            // แสดงผล UI
-            document.getElementById('prizeTitle').innerText = `รางวัล: ${prize.name}`;
+            // แสดงผลผู้ชนะ
             const container = document.getElementById('numberContainer');
             container.innerHTML = winners.map(n => `
                 <div class="winner-card bg-white text-indigo-600 text-6xl md:text-8xl font-black w-40 h-40 md:w-56 md:h-56 flex items-center justify-center rounded-3xl shadow-2xl border-4 border-indigo-100 italic">
@@ -76,18 +107,25 @@
                 </div>
             `).join('');
 
-            // บันทึก Backend
-            await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: "saveResult", prizeName: prize.name, winners, auth_token: AUTH_TOKEN })
-            });
+            // บันทึกข้อมูลไปยัง Google Sheets
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        action: "saveResult", 
+                        prizeName: prize.name, 
+                        winners, 
+                        auth_token: AUTH_TOKEN 
+                    })
+                });
+            } catch (e) { console.error("Save error", e); }
 
+            // ดึงข้อมูลใหม่เพื่ออัปเดตสถานะคงเหลือและประวัติ
             await fetchData();
             btn.disabled = false;
             btn.innerText = "สุ่มรางวัลถัดไป";
         }
 
-        function toggleSidebar(id) { document.getElementById(id).classList.toggle('-translate-x-full'); document.getElementById(id).classList.toggle('translate-x-full'); }
         window.onload = fetchData;
     </script>
 
@@ -96,32 +134,37 @@
         
         <!-- Sidebar รางวัล (ซ้าย) -->
         <div id="leftBar" class="sidebar fixed left-0 top-0 h-full w-64 bg-slate-50 border-r p-6 z-40 -translate-x-full shadow-xl overflow-y-auto">
-            <h2 class="text-xl font-black mb-6 border-b pb-2 uppercase tracking-tighter">Prizes List</h2>
+            <h2 class="text-xl font-black mb-1 border-b pb-2 uppercase tracking-tighter text-indigo-600">Prizes List</h2>
+            <p class="text-[10px] text-slate-400 mb-4">* คลิกเพื่อเลือกรางวัลที่ต้องการสุ่ม</p>
             <div id="prizeList"></div>
         </div>
 
         <!-- Sidebar ประวัติ (ขวา) -->
         <div id="rightBar" class="sidebar fixed right-0 top-0 h-full w-64 bg-slate-50 border-l p-6 z-40 translate-x-full shadow-xl overflow-y-auto">
-            <h2 class="text-xl font-black mb-6 border-b pb-2 uppercase tracking-tighter">History</h2>
+            <h2 class="text-xl font-black mb-6 border-b pb-2 uppercase tracking-tighter text-indigo-600">History</h2>
             <div id="historyList"></div>
         </div>
 
         <!-- Nav Buttons -->
         <div class="fixed top-6 w-full px-10 flex justify-between z-50">
-            <button onclick="document.getElementById('leftBar').classList.toggle('-translate-x-full')" class="bg-white p-3 rounded-full shadow-md hover:bg-slate-50">🎁 ของรางวัล</button>
-            <button onclick="document.getElementById('rightBar').classList.toggle('translate-x-full')" class="bg-white p-3 rounded-full shadow-md hover:bg-slate-50">📜 ประวัติ</button>
+            <button onclick="document.getElementById('leftBar').classList.toggle('-translate-x-full')" class="bg-white p-3 rounded-full shadow-md hover:bg-slate-50 flex items-center gap-2">
+                <span class="text-xl">🎁</span> <span class="hidden md:inline font-bold">ของรางวัล</span>
+            </button>
+            <button onclick="document.getElementById('rightBar').classList.toggle('translate-x-full')" class="bg-white p-3 rounded-full shadow-md hover:bg-slate-50 flex items-center gap-2">
+                <span class="text-xl">📜</span> <span class="hidden md:inline font-bold">ประวัติ</span>
+            </button>
         </div>
 
         <!-- Main Content -->
         <div class="text-center">
-            <h3 id="prizeTitle" class="text-indigo-500 font-bold text-5xl mb-4 tracking-widest uppercase">พร้อมสำหรับการสุ่ม</h3>
-            <div id="numberContainer" class="flex flex-wrap justify-center gap-6 mb-12">
-                <div class="text-slate-200 text-9xl font-black italic select-none">READY</div>
+            <h3 id="prizeTitle" class="text-indigo-500 font-bold text-3xl md:text-5xl mb-6 tracking-widest uppercase">กำลังโหลดข้อมูล...</h3>
+            <div id="numberContainer" class="flex flex-wrap justify-center gap-6 mb-12 min-h-[160px] md:min-h-[224px]">
+                <div class="text-slate-200 text-8xl md:text-9xl font-black italic select-none">READY</div>
             </div>
-            <button id="drawBtn" onclick="startDraw()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-2xl font-black px-16 py-6 rounded-2xl shadow-[0_20px_50px_rgba(79,70,229,0.3)] transition-all transform active:scale-95">
+            <button id="drawBtn" onclick="startDraw()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-2xl font-black px-16 py-6 rounded-2xl shadow-[0_20px_50px_rgba(79,70,229,0.3)] transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                 เริ่มสุ่มรางวัล
             </button>
-            <p class="mt-8 text-slate-400 text-sm uppercase tracking-[0.3em]">182 Participants</p>
+            <p class="mt-8 text-slate-400 text-sm uppercase tracking-[0.3em]">182 Participants • Manual Select Enabled</p>
         </div>
     </div>
 
