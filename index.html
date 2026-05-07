@@ -12,44 +12,6 @@
         .winner-card { animation: pop 0.5s ease-out forwards; }
         @keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         
-        /* แก้ไขส่วน countdown-circle ทั้งหมดใน <style> */
-.countdown-circle {
-    width: 150px; 
-    height: 150px;
-    border-radius: 50%;
-    border: 8px solid #e2e8f0; /* เส้นพื้นหลังสีเทา */
-    position: relative;
-    display: flex; 
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-}
-
-/* เส้นสีม่วงที่หมุน */
-.countdown-circle::before {
-    content: '';
-    position: absolute;
-    top: -8px; 
-    left: -8px; 
-    width: 150px; 
-    height: 150px;
-    border-radius: 50%;
-    border: 8px solid transparent;
-    border-top-color: #4f46e5; /* สีม่วง indigo-600 */
-    animation: spin 1s linear infinite;
-    box-sizing: border-box;
-    pointer-events: none;
-}
-
-#timerText {
-    font-size: 4rem; /* ขนาดเลข */
-    font-weight: 900;
-    color: #4f46e5;
-    z-index: 10;
-    /* บังคับให้อยู่กึ่งกลางเป๊ะ */
-    display: block;
-    line-height: 1;
-}
 
 @keyframes spin { 
     from { transform: rotate(0deg); }
@@ -189,28 +151,10 @@
             // เริ่ม Countdown
             startCountdown(qty, available);
         }
-
-        function startCountdown(qty, available) {
-              const btn = document.getElementById('drawBtn');
-              const displayArea = document.getElementById('displayArea');
-              btn.disabled = true;
-    
-         let timeLeft = 5; // แก้จาก 3 เป็น 5
-             displayArea.innerHTML = `<div class="flex flex-col items-center">
-                <div class="countdown-circle">
-                    <span id="timerText" class="text-6xl font-black text-indigo-600">${timeLeft}</span>
-                </div>
-        </div>`;
-
-            const timer = setInterval(() => {
-                timeLeft--;
-                if(timeLeft > 0) {
-                    document.getElementById('timerText').innerText = timeLeft;
-                } else {
-                    clearInterval(timer);
-                    executeDraw(qty, available);
-                }
-            }, 1000);
+           const btn = document.getElementById('drawBtn');
+            btn.disabled = true; // ปิดปุ่มทันทีเพื่อกันกดซ้ำ
+            executeDraw(qty, available); // เริ่มรันเลขทันที
+        
         }
 
         async function executeDraw(qty, available) {
@@ -235,7 +179,7 @@
             
             // ถ้าไม่ใช่เลขสุดท้าย ให้รอ 3 วินาทีก่อนขึ้นเลขถัดไป
             if (i < winners.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 3000));
+                await new Promise(resolve => setTimeout(resolve, 1000));
             }
         }
     } else {
@@ -251,7 +195,7 @@
 
             // ถ้ายังมีกลุ่มถัดไป ให้รอ 3 วินาที
             if (i + 5 < winners.length) {
-                await new Promise(resolve => setTimeout(resolve, 3000));
+                await new Promise(resolve => setTimeout(resolve, 1000));
             }
         }
     }
