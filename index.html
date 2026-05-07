@@ -18,7 +18,9 @@
     border-radius: 50%;
     border: 8px solid #e2e8f0;
     position: relative; /* เพิ่มบรรทัดนี้ */
-    display: flex; items-center: center; justify-content: center;
+    display: flex; 
+    align-items: center;      /* จัดกึ่งกลางแนวดิ่ง */
+    justify-content: center;   /* จัดกึ่งกลางแนวราบ */
     }
 
 
@@ -30,7 +32,13 @@
     border: 8px solid transparent;
     border-top-color: #4f46e5;
     animation: spin 1s linear infinite;
+    z-index: 1;
     }
+
+    #timerText {
+    position: relative;
+    z-index: 10;              /* ให้ตัวเลขอยู่ชั้นบนสุด */
+    line-height: 1;           /* ปรับระยะบรรทัดให้เลขอยู่กลางเป๊ะ */
 
     @keyframes spin { to { transform: rotate(360deg); } }
         .prize-item.active { border-color: #4f46e5; background-color: #eff6ff; border-width: 2px; }
@@ -174,10 +182,10 @@
     
          let timeLeft = 5; // แก้จาก 3 เป็น 5
              displayArea.innerHTML = `<div class="flex flex-col items-center">
-             <div class="countdown-circle">
-            <span id="timerText" class="text-6xl font-black text-indigo-600">${timeLeft}</span>
-           </div>
-         </div>`;
+                <div class="countdown-circle">
+                    <span id="timerText" class="text-6xl font-black text-indigo-600">${timeLeft}</span>
+                </div>
+        </div>`;
 
             const timer = setInterval(() => {
                 timeLeft--;
