@@ -20,7 +20,7 @@
     <div id="leftBar" class="sidebar fixed left-0 top-0 h-full w-72 bg-white border-r shadow-2xl z-50 -translate-x-full overflow-y-auto p-6">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-xl font-bold text-slate-800">เลือกของรางวัล</h2>
-            <button onclick="toggleBar('leftBar')" class="text-slate-400 hover:text-red-500">✕</button>
+            <button onclick="toggleBar('leftBar')" class="text-slate-400 hover:text-red-500 text-2xl">✕</button>
         </div>
         <div id="prizeList" class="space-y-2"></div>
     </div>
@@ -29,7 +29,7 @@
     <div id="rightBar" class="sidebar fixed right-0 top-0 h-full w-72 bg-white border-l shadow-2xl z-50 translate-x-full overflow-y-auto p-6">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-xl font-bold text-slate-800">ประวัติสุ่ม (เรียงเลข)</h2>
-            <button onclick="toggleBar('rightBar')" class="text-slate-400 hover:text-red-500">✕</button>
+            <button onclick="toggleBar('rightBar')" class="text-slate-400 hover:text-red-500 text-2xl">✕</button>
         </div>
         <div id="historyList" class="space-y-1"></div>
     </div>
@@ -39,37 +39,46 @@
         
         <!-- Toggle Buttons -->
         <div class="fixed top-6 w-full px-8 flex justify-between z-40">
-            <button onclick="toggleBar('leftBar')" class="bg-white border shadow-md px-5 py-2 rounded-full hover:bg-slate-50 transition font-bold text-indigo-600">🎁 ของรางวัล</button>
-            <button onclick="toggleBar('rightBar')" class="bg-white border shadow-md px-5 py-2 rounded-full hover:bg-slate-50 transition font-bold text-indigo-600">📜 ประวัติ</button>
+            <button onclick="toggleBar('leftBar')" class="bg-white border shadow-md px-6 py-2.5 rounded-full hover:bg-slate-50 transition font-bold text-indigo-600 flex items-center gap-2">
+                <span>🎁</span> เลือกของรางวัล
+            </button>
+            <button onclick="toggleBar('rightBar')" class="bg-white border shadow-md px-6 py-2.5 rounded-full hover:bg-slate-50 transition font-bold text-indigo-600 flex items-center gap-2">
+                <span>📜</span> ดูประวัติสุ่ม
+            </button>
         </div>
 
         <!-- Drawing Zone -->
-        <div class="text-center w-full max-w-4xl">
+        <div class="text-center w-full max-w-5xl px-4">
             <h1 id="selectedPrizeName" class="text-4xl md:text-6xl font-extrabold text-slate-800 mb-2">กรุณาเลือกรางวัล</h1>
-            <p id="limitInfo" class="text-slate-400 mb-8 font-medium">รอการเชื่อมต่อฐานข้อมูล...</p>
+            <p id="limitInfo" class="text-slate-400 mb-8 font-medium italic">รอการเลือกรางวัลจากแถบด้านซ้าย...</p>
 
-            <!-- Input จำนวนที่จะสุ่ม -->
-            <div class="flex items-center justify-center gap-4 mb-10">
-                <span class="text-slate-500 font-bold">จำนวนที่สุ่มรอบนี้:</span>
-                <input type="number" id="drawQty" value="1" min="1" class="w-20 text-center text-2xl font-bold border-2 border-indigo-100 rounded-lg p-2 outline-none focus:border-indigo-500">
+            <!-- ช่องกำหนดจำนวนเลขที่จะสุ่ม (เพิ่มใหม่) -->
+            <div class="flex flex-col items-center gap-3 mb-10">
+                <label for="drawQty" class="text-slate-600 font-bold text-lg">ต้องการสุ่มจำนวนกี่คนในรอบนี้?</label>
+                <div class="flex items-center gap-4">
+                    <input type="number" id="drawQty" value="1" min="1" 
+                        class="w-24 text-center text-3xl font-black border-4 border-indigo-100 rounded-2xl p-3 outline-none focus:border-indigo-500 transition-all shadow-inner">
+                    <span class="text-slate-400 font-bold text-xl">คน</span>
+                </div>
             </div>
 
-            <!-- Area แสดงตัวเลข -->
-            <div id="numberContainer" class="flex flex-wrap justify-center gap-6 mb-12 min-h-[200px]">
-                <div class="text-slate-200 text-9xl font-black italic select-none opacity-20">READY</div>
+            <!-- Area แสดงตัวเลขที่สุ่มได้ -->
+            <div id="numberContainer" class="flex flex-wrap justify-center gap-4 md:gap-8 mb-12 min-h-[220px] max-h-[45vh] overflow-y-auto p-4">
+                <div class="text-slate-200 text-7xl md:text-9xl font-black italic select-none opacity-20 mt-10">READY</div>
             </div>
 
             <!-- Action Button -->
-            <button id="drawBtn" onclick="startDraw()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-3xl font-black px-16 py-6 rounded-2xl shadow-xl transform active:scale-95 transition-all disabled:opacity-30">
-                เริ่มสุ่มรางวัล
+            <button id="drawBtn" onclick="startDraw()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-3xl font-black px-20 py-6 rounded-3xl shadow-[0_20px_50px_rgba(79,70,229,0.3)] transform active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                กดเพื่อเริ่มสุ่ม
             </button>
             
-            <p class="mt-8 text-slate-400 text-xs uppercase tracking-widest">182 Participants • System v2.0</p>
+            <p class="mt-8 text-slate-400 text-xs uppercase tracking-widest font-bold">Total 182 Participants</p>
         </div>
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyxKwOd9h1mvZlWxQAKTdfZYuVOd_h_intdIRx52z8CvRF6OHIEs2qYCX6R0BpowBtF4g/exec"; 
+        // *** ใส่ URL ที่ได้จากตอน Deploy Google Apps Script ***
+        const API_URL = "ใส่_WEB_APP_URL_ที่นี่"; 
         const AUTH_TOKEN = "I_want_to_eat_rn";
         let prizes = [], drawnNumbers = [], history = [], selectedPrize = null;
 
@@ -83,30 +92,25 @@
                 
                 renderPrizes();
                 renderHistory();
-                
-                if (prizes.length > 0 && !selectedPrize) {
-                    selectPrize(0);
-                }
-            } catch (e) { alert("เชื่อมต่อ API ไม่สำเร็จ"); }
+            } catch (e) { console.error("API Error:", e); }
         }
 
         function renderPrizes() {
             const list = document.getElementById('prizeList');
             list.innerHTML = prizes.map((p, i) => `
-                <div id="p-item-${i}" onclick="selectPrize(${i})" class="prize-item p-4 border rounded-xl cursor-pointer transition-all hover:shadow-md">
-                    <p class="font-bold text-slate-700">${p.name}</p>
+                <div id="p-item-${i}" onclick="selectPrize(${i})" class="prize-item p-4 border rounded-xl cursor-pointer transition-all hover:bg-indigo-50 group">
+                    <p class="font-bold text-slate-700 group-hover:text-indigo-600">${p.name}</p>
                 </div>
             `).join('');
         }
 
         function renderHistory() {
             const list = document.getElementById('historyList');
-            // เรียงประวัติจากเลขน้อยไปมาก
             const sortedHistory = [...history].sort((a, b) => Number(a.number) - Number(b.number));
             list.innerHTML = sortedHistory.map(h => `
-                <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100">
-                    <span class="font-black text-indigo-600">#${h.number}</span>
-                    <span class="text-xs text-slate-500 truncate ml-2">${h.prize}</span>
+                <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100 mb-1">
+                    <span class="font-black text-indigo-600 text-lg">#${h.number}</span>
+                    <span class="text-xs text-slate-500 truncate ml-2 max-w-[120px]">${h.prize}</span>
                 </div>
             `).join('');
         }
@@ -115,50 +119,80 @@
             selectedPrize = prizes[index];
             document.querySelectorAll('.prize-item').forEach(el => el.classList.remove('active'));
             document.getElementById(`p-item-${index}`).classList.add('active');
+            
             document.getElementById('selectedPrizeName').innerText = selectedPrize.name;
             document.getElementById('drawQty').max = selectedPrize.remain;
-            document.getElementById('limitInfo').innerText = `มีสิทธิ์สุ่มได้สูงสุด ${selectedPrize.remain} ครั้งสำหรับรางวัลนี้`;
+            document.getElementById('limitInfo').innerText = `เหลือรางวัลนี้ในระบบอีก ${selectedPrize.remain} ชิ้น`;
+            
+            // ปรับค่า Input อัตโนมัติถ้าของเหลือน้อยกว่าค่าที่ตั้งไว้
+            const qtyInput = document.getElementById('drawQty');
+            if(parseInt(qtyInput.value) > selectedPrize.remain) {
+                qtyInput.value = selectedPrize.remain;
+            }
+            
+            toggleBar('leftBar'); // ปิดแถบหลังจากเลือก
         }
 
         async function startDraw() {
+            if (!selectedPrize) return alert("กรุณากดปุ่ม 'ของรางวัล' ทางซ้าย เพื่อเลือกของรางวัลก่อนสุ่ม");
+            
             const qtyInput = document.getElementById('drawQty');
             const qty = parseInt(qtyInput.value);
 
-            if (!selectedPrize) return alert("เลือกของรางวัลก่อนครับ");
-            if (qty > selectedPrize.remain) return alert(`รางวัลนี้เหลือเพียง ${selectedPrize.remain} ชิ้นเท่านั้น`);
+            if (qty < 1) return alert("กรุณาระบุจำนวนที่ต้องการสุ่ม");
+            if (qty > selectedPrize.remain) return alert(`ขออภัย! รางวัลนี้เหลือเพียง ${selectedPrize.remain} ชิ้น ไม่สามารถสุ่ม ${qty} คนได้`);
             
             const btn = document.getElementById('drawBtn');
             btn.disabled = true;
+            btn.innerText = "กำลังสุ่ม...";
 
-            // Logic หาเลขที่เหลือ (1-182)
+            // กรองหาเลขที่ยังว่างอยู่
             let available = [];
-            for(let i=1; i<=182; i++) if(!drawnNumbers.includes(i)) available.push(i);
+            for(let i=1; i<=182; i++) {
+                if(!drawnNumbers.includes(i)) available.push(i);
+            }
 
-            if(available.length < qty) return alert("จำนวนคนที่มีสิทธิ์เหลือน้อยกว่าจำนวนที่ต้องการสุ่ม");
+            if(available.length < qty) {
+                btn.disabled = false;
+                btn.innerText = "เริ่มสุ่มรางวัล";
+                return alert("จำนวนคนที่มีสิทธิ์เหลือน้อยกว่าจำนวนที่ต้องการสุ่ม");
+            }
 
+            // สุ่มเลือกผู้ชนะตามจำนวน (qty)
             let winners = [];
             for(let i=0; i<qty; i++) {
                 const randIdx = Math.floor(Math.random() * available.length);
                 winners.push(available.splice(randIdx, 1)[0]);
             }
 
-            // แสดงผล UI
+            // แสดงตัวเลขที่สุ่มได้บนหน้าจอ
             const container = document.getElementById('numberContainer');
             container.innerHTML = winners.map(n => `
-                <div class="winner-card w-28 h-28 md:w-44 md:h-44 bg-white border-4 border-indigo-50 rounded-3xl shadow-2xl flex items-center justify-center text-4xl md:text-6xl font-black text-indigo-600 italic">
+                <div class="winner-card w-24 h-24 md:w-40 md:h-40 bg-white border-4 border-indigo-100 rounded-3xl shadow-xl flex items-center justify-center text-4xl md:text-6xl font-black text-indigo-600 italic">
                     ${n}
                 </div>
             `).join('');
 
-            // บันทึกไป Backend
-            await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: "saveResult", prizeName: selectedPrize.name, winners, auth_token: AUTH_TOKEN })
-            });
+            // บันทึกผลไปยัง Backend
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // เพื่อเลี่ยงปัญหา CORS เบื้องต้นสำหรับ Apps Script
+                    body: JSON.stringify({ 
+                        action: "saveResult", 
+                        prizeName: selectedPrize.name, 
+                        winners, 
+                        auth_token: AUTH_TOKEN 
+                    })
+                });
+            } catch (e) { console.error("Save error:", e); }
 
-            // อัปเดตข้อมูลใหม่
-            await init();
-            btn.disabled = false;
+            // อัปเดตข้อมูลใหม่หลังจากบันทึก (รอประมาณ 1-2 วินาทีเพื่อให้ Sheets อัปเดต)
+            setTimeout(async () => {
+                await init();
+                btn.disabled = false;
+                btn.innerText = "กดเพื่อเริ่มสุ่ม";
+            }, 1500);
         }
 
         function toggleBar(id) {
