@@ -121,189 +121,149 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbzSYktzpNkUJnmjyK8O2MaiJDt56FJWp0tKYQmaatLz_FnHK04IpdnuufimZME_cA2Fvg/exec"; 
-        const AUTH_TOKEN = "I_want_to_eat_rn";
-        let prizes = [], drawnNumbers = [], history = [], selectedPrize = null;
+    const API_URL = "https://script.google.com/macros/s/AKfycbzSYktzpNkUJnmjyK8O2MaiJDt56FJWp0tKYQmaatLz_FnHK04IpdnuufimZME_cA2Fvg/exec"; 
+    const AUTH_TOKEN = "I_want_to_eat_rn";
+    let prizes = [], drawnNumbers = [], history = [], selectedPrize = null;
 
-        async function init() {
-            try {
-                const res = await fetch(API_URL);
-                const data = await res.json();
-                prizes = data.prizes;
-                drawnNumbers = data.drawnNumbers;
-                history = data.history;
+    async function init() {
+        try {
+            const res = await fetch(API_URL);
+            const data = await res.json();
+            prizes = data.prizes;
+            drawnNumbers = data.drawnNumbers;
+            history = data.history;
 
-                renderPrizes();
-                renderHistory();
-                updateUserCount();
-            } catch (e) { console.error("Sync Error:", e); }
-        }
-
-        function updateUserCount() {
-            const remaining = 182 - drawnNumbers.length;
-            document.getElementById('remainingUsers').innerText = `จำนวนคนที่ยังไม่สุ่ม ${remaining} คน`;
-        }
-
-        function renderPrizes() {
-            const list = document.getElementById('prizeList');
-            list.innerHTML = prizes.map((p, i) => `
-                <div id="p-item-${i}" onclick="selectPrize(${i})" class="prize-item p-4 border rounded-xl cursor-pointer transition-all hover:bg-indigo-50 group ${selectedPrize && selectedPrize.name === p.name ? 'active' : ''}">
-                    <p class="font-bold text-slate-700 group-hover:text-indigo-600">${p.name}</p>
-                </div>
-            `).join('');
-        }
-
-        function renderHistory() {
-            const list = document.getElementById('historyList');
-            const sorted = [...history].sort((a, b) => Number(a.number) - Number(b.number));
-            list.innerHTML = sorted.map(h => `
-                <div class="flex justify-between items-center bg-slate-50 p-2 rounded border mb-1">
-                    <span class="font-black text-indigo-600 text-lg">#${h.number}</span>
-                    <span class="text-xs text-slate-500 truncate ml-2">${h.prize}</span>
-                </div>
-            `).join('');
-        }
-
-        function selectPrize(index) {
-            selectedPrize = prizes[index];
             renderPrizes();
-            document.getElementById('selectedPrizeName').innerText = selectedPrize.name;
-            toggleBar('leftBar');
+            renderHistory();
+            updateUserCount();
+        } catch (e) { console.error("Sync Error:", e); }
+    }
+
+    function updateUserCount() {
+        const remaining = 182 - drawnNumbers.length;
+        document.getElementById('remainingUsers').innerText = `จำนวนคนที่ยังไม่สุ่ม ${remaining} คน`;
+    }
+
+    function renderPrizes() {
+        const list = document.getElementById('prizeList');
+        list.innerHTML = prizes.map((p, i) => `
+            <div id="p-item-${i}" onclick="selectPrize(${i})" class="prize-item p-4 border rounded-xl cursor-pointer transition-all hover:bg-indigo-50 group ${selectedPrize && selectedPrize.name === p.name ? 'active' : ''}">
+                <p class="font-bold text-slate-700 group-hover:text-indigo-600">${p.name}</p>
+            </div>
+        `).join('');
+    }
+
+    function renderHistory() {
+        const list = document.getElementById('historyList');
+        const sorted = [...history].sort((a, b) => Number(a.number) - Number(b.number));
+        list.innerHTML = sorted.map(h => `
+            <div class="flex justify-between items-center bg-slate-50 p-2 rounded border mb-1">
+                <span class="font-black text-indigo-600 text-lg">#${h.number}</span>
+                <span class="text-xs text-slate-500 truncate ml-2">${h.prize}</span>
+            </div>
+        `).join('');
+    }
+
+    function selectPrize(index) {
+        selectedPrize = prizes[index];
+        renderPrizes();
+        document.getElementById('selectedPrizeName').innerText = selectedPrize.name;
+        toggleBar('leftBar');
+    }
+
+    // ฟังก์ชันเปิด-ปิดแถบข้าง (แก้ไขให้ทำงานได้ปกติ)
+    function toggleBar(id) {
+        const el = document.getElementById(id);
+        if (id === 'leftBar') {
+            el.classList.toggle('-translate-x-full');
+        } else {
+            el.classList.toggle('translate-x-full');
+        }
+    }
+
+    // ฟังก์ชันเมื่อกดปุ่มสุ่ม (ตัด Countdown ออกแล้ว)
+    async function handleDrawClick() {
+        if (!selectedPrize) return alert("กรุณาเลือกของรางวัลก่อนครับ");
+
+        const qty = parseInt(document.getElementById('drawQty').value);
+        if (qty < 1) return alert("ระบุจำนวนอย่างน้อย 1 คน");
+        if (qty > selectedPrize.remain) {
+            return alert(`ไม่สามารถสุ่ม ${qty} คนได้ เนื่องจากตอนนี้ของเหลือเพียง ${selectedPrize.remain} ชิ้น`);
         }
 
-        async function handleDrawClick() {
-            if (!selectedPrize) return alert("กรุณาเลือกของรางวัลก่อนครับ");
+        const available = [];
+        for(let i=1; i<=182; i++) if(!drawnNumbers.includes(i)) available.push(i);
+        if(available.length < qty) return alert("จำนวนคนที่มีสิทธิ์ไม่พอ");
 
-            const qty = parseInt(document.getElementById('drawQty').value);
-
-            // Logic เช็คจำนวนของที่เหลือ
-            if (qty < 1) return alert("ระบุจำนวนอย่างน้อย 1 คน");
-            if (qty > selectedPrize.remain) {
-                return alert(`ไม่สามารถสุ่ม ${qty} คนได้ เนื่องจากตอนนี้ของเหลือเพียง ${selectedPrize.remain} ชิ้น\nกรุณาเปลี่ยนจำนวนสุ่มให้เท่ากับหรือน้อยกว่าของที่เหลือครับ`);
-            }
-
-            const available = [];
-            for(let i=1; i<=182; i++) if(!drawnNumbers.includes(i)) available.push(i);
-            if(available.length < qty) return alert("จำนวนคนที่มีสิทธิ์ไม่พอ");
-
-            // เริ่ม Countdown
-            startCountdown(qty, available);
-        }
-
-        function startCountdown(qty, available) {
-              const btn = document.getElementById('drawBtn');
-              const displayArea = document.getElementById('displayArea');
-              btn.disabled = true;
-    
-         let timeLeft = 5; // แก้จาก 3 เป็น 5
-             displayArea.innerHTML = `<div class="flex flex-col items-center">
-                <div class="countdown-circle">
-                    <span id="timerText" class="text-6xl font-black text-indigo-600">${timeLeft}</span>
-                </div>
-        </div>`;
-
-            const timer = setInterval(() => {
-                timeLeft--;
-                if(timeLeft > 0) {
-                    document.getElementById('timerText').innerText = timeLeft;
-                } else {
-                    clearInterval(timer);
-                    executeDraw(qty, available);
-                }
-            }, 1000);
-           const btn = document.getElementById('drawBtn');
-            btn.disabled = true; // ปิดปุ่มทันทีเพื่อกันกดซ้ำ
-            executeDraw(qty, available); // เริ่มรันเลขทันที
+        const btn = document.getElementById('drawBtn');
+        btn.disabled = true; // ปิดปุ่มกันกดซ้ำ
         
-        }
-
-        async function executeDraw(qty, available) {
-    let winners = [];
-    for (let i = 0; i < qty; i++) {
-        const randIdx = Math.floor(Math.random() * available.length);
-        winners.push(available.splice(randIdx, 1)[0]);
+        executeDraw(qty, available); // เริ่มแสดงผลทันที
     }
 
-    const displayArea = document.getElementById('displayArea');
-    displayArea.innerHTML = ""; // ล้างหน้าจอหลัง Countdown เสร็จ
+    async function executeDraw(qty, available) {
+        let winners = [];
+        for (let i = 0; i < qty; i++) {
+            const randIdx = Math.floor(Math.random() * available.length);
+            winners.push(available.splice(randIdx, 1)[0]);
+        }
 
-    // Logic การแสดงผล
-    if (qty <= 10) {
-        // กรณีสุ่มไม่เกิน 10 เลข: ขึ้นทีละเลข ห่างกันทุก 3 วินาที
-        for (let i = 0; i < winners.length; i++) {
-            const cardHtml = `
-                <div class="winner-card w-24 h-24 md:w-40 md:h-40 bg-white border-4 border-indigo-100 rounded-3xl shadow-xl flex items-center justify-center text-4xl md:text-6xl font-black text-indigo-600 italic">
-                    ${winners[i]}
-                </div>`;
-            displayArea.insertAdjacentHTML('beforeend', cardHtml);
+        const displayArea = document.getElementById('displayArea');
+        displayArea.innerHTML = ""; 
 
-            // ถ้าไม่ใช่เลขสุดท้าย ให้รอ 3 วินาทีก่อนขึ้นเลขถัดไป
-            if (i < winners.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 3000));
-                await new Promise(resolve => setTimeout(resolve, 1000));
+        // Logic การแสดงผลแบบทยอยขึ้น
+        if (qty <= 10) {
+            for (let i = 0; i < winners.length; i++) {
+                const cardHtml = `
+                    <div class="winner-card w-24 h-24 md:w-40 md:h-40 bg-white border-4 border-indigo-100 rounded-3xl shadow-xl flex items-center justify-center text-4xl md:text-6xl font-black text-indigo-600 italic">
+                        ${winners[i]}
+                    </div>`;
+                displayArea.insertAdjacentHTML('beforeend', cardHtml);
+                if (i < winners.length - 1) await new Promise(r => setTimeout(r, 1000)); // รอ 1 วินาทีต่อเลข
+            }
+        } else {
+            for (let i = 0; i < winners.length; i += 5) {
+                const chunk = winners.slice(i, i + 5);
+                const chunkHtml = chunk.map(n => `
+                    <div class="winner-card w-24 h-24 md:w-40 md:h-40 bg-white border-4 border-indigo-100 rounded-3xl shadow-xl flex items-center justify-center text-4xl md:text-6xl font-black text-indigo-600 italic">
+                        ${n}
+                    </div>`).join('');
+                displayArea.insertAdjacentHTML('beforeend', chunkHtml);
+                if (i + 5 < winners.length) await new Promise(r => setTimeout(r, 1000)); // รอ 1 วินาทีต่อชุด
             }
         }
-    } else {
-        // กรณีสุ่มมากกว่า 10 เลข: ขึ้นทีละ 5 เลข ห่างกันทุก 3 วินาที
-        for (let i = 0; i < winners.length; i += 5) {
-            const chunk = winners.slice(i, i + 5);
-            const chunkHtml = chunk.map(n => `
-                <div class="winner-card w-24 h-24 md:w-40 md:h-40 bg-white border-4 border-indigo-100 rounded-3xl shadow-xl flex items-center justify-center text-4xl md:text-6xl font-black text-indigo-600 italic">
-                    ${n}
-                </div>`).join('');
 
-            displayArea.insertAdjacentHTML('beforeend', chunkHtml);
-
-            // ถ้ายังมีกลุ่มถัดไป ให้รอ 3 วินาที
-            if (i + 5 < winners.length) {
-                await new Promise(resolve => setTimeout(resolve, 3000));
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            }
-        }
+        document.getElementById('drawBtn').disabled = false;
+        saveAndSync(winners);
     }
 
-    // เปิดให้กดสุ่มใหม่ได้หลังจากแสดงครบแล้ว
-    document.getElementById('drawBtn').disabled = false;
+    async function saveAndSync(winners) {
+        try {
+            drawnNumbers.push(...winners);
+            updateUserCount();
+            selectedPrize.remain -= winners.length;
 
-    // บันทึกข้อมูลเบื้องหลัง
-    saveAndSync(winners);
-}
+            await fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({ 
+                    action: "saveResult", 
+                    prizeName: selectedPrize.name, 
+                    winners, 
+                    auth_token: AUTH_TOKEN 
+                })
+            });
 
-        async function saveAndSync(winners) {
-            try {
-                // อัปเดตข้อมูลในหน้าเว็บชั่วคราว (Optimistic Update)
-                drawnNumbers.push(...winners);
-                updateUserCount();
-                selectedPrize.remain -= winners.length;
+            const res = await fetch(API_URL);
+            const data = await res.json();
+            prizes = data.prizes;
+            drawnNumbers = data.drawnNumbers;
+            history = data.history;
+            renderHistory();
+        } catch (e) { console.error("Save Error"); }
+    }
 
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({ 
-                        action: "saveResult", 
-                        prizeName: selectedPrize.name, 
-                        winners, 
-                        auth_token: AUTH_TOKEN 
-                    })
-                });
-
-                // ดึงข้อมูลจริงมา Re-sync อีกครั้งแบบเงียบๆ
-                const res = await fetch(API_URL);
-                const data = await res.json();
-                prizes = data.prizes;
-                drawnNumbers = data.drawnNumbers;
-                history = data.history;
-                renderHistory();
-            } catch (e) { console.error("Background Save Error"); }
-        }
-
-        function toggleBar(id) {
-            const el = document.getElementById(id);
-            if (id === 'leftBar') el.classList.toggle('-translate-x-full');
-            else el.classList.toggle('translate-x-full');
-        }
-
-        window.onload = init;
-    </script>
+    window.onload = init;
+</script>
 </body>
 </html>
